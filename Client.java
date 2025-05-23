@@ -4,7 +4,7 @@ import java.net.Socket;
 public class Client {
     public static void main(String[] args) {
         int port = 1200;
-        String address = "localhost";
+        String address = "172.20.10.2";
         try {
             Socket s = new Socket(address, port);
 
@@ -18,15 +18,27 @@ public class Client {
             PrintWriter pr = new PrintWriter(bw, true);
             // Morpion a = new Morpion();
 
+            // Thread pour lire les messages du serveur
+            Thread serverListener = new Thread(() -> {
+                String serverMsg;
+                try {
+                    while ((serverMsg = br.readLine()) != null) {
+                        System.out.println("[Serveur] " + serverMsg);
+                    }
+                } catch (IOException e) {
+                    System.out.println("Connexion au serveur perdue.");
+                }
+            });
+            serverListener.start();
+
             BufferedReader consoleReader = new BufferedReader(new InputStreamReader(System.in));
             String userInput;
             System.out.println("Tapez un message (ou 'exit' pour quitter) :");
+            System.out.print("[Client] ");
             while ((userInput = consoleReader.readLine()) != null) {
                 if (userInput.equalsIgnoreCase("exit"))
                     break;
                 pr.println(userInput); // envoi
-                String chaine = br.readLine(); // lecture
-                System.out.println(chaine);
             }
             s.close();
         } catch (IOException e) {
