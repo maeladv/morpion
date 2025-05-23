@@ -13,16 +13,25 @@ public class Main {
         scanner.nextLine(); // consomme le retour à la ligne
 
         if (choix == 1) {
-            Serveur serveur = new Serveur();
-            serveur.start();
+            // on le lance dans autre thread (comme dans un autre terminal)
+            Thread serveurThread = new Thread(() -> {
+                Serveur serveur = new Serveur();
+                serveur.start();
+            });
+            serveurThread.start();
+            Morpion morpion = new Morpion(0);
         } else if (choix == 2) {
             System.out.print("Entrez l'adresse IP du serveur : ");
             String ip = scanner.nextLine();
             System.out.print("Entrez le port du serveur : ");
             int port = scanner.nextInt();
             scanner.nextLine();
-            Client client = new Client(ip, port);
-            client.start();
+            Thread clientThread = new Thread(() -> {
+                Client client = new Client(ip, port);
+                client.start();
+            });
+            clientThread.start();
+            Morpion morpion = new Morpion(1);
         } else {
             System.out.println("Choix invalide.");
         }

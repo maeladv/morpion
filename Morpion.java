@@ -9,8 +9,10 @@ public class Morpion extends JFrame {
     char[][] morpion = new char[3][3];
     char gagnant = 'a'; // Ajouté pour stocker le gagnant
     
+    
 
-    public Morpion() {
+    // gameMode = 0 pour serveur, 1 pour client
+    public Morpion(int gameMode) {
         addMouseListener(new Souris(this));
         setSize(500, 600);
         Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
