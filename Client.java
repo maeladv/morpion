@@ -1,10 +1,23 @@
 import java.io.*;
 import java.net.Socket;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Client {
+    // Fonction pour vider le buffer d'entrée
+    private static void clearInputBuffer(BufferedReader reader) {
+        try {
+            while (reader.ready()) {
+                reader.read();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
     public static void main(String[] args) {
         int port = 1200;
-        String address = "172.20.10.2";
+        AtomicBoolean mon_tour = new AtomicBoolean(true);
+        String address = "localhost";
         try {
             Socket s = new Socket(address, port);
 
@@ -18,29 +31,47 @@ public class Client {
             PrintWriter pr = new PrintWriter(bw, true);
             // Morpion a = new Morpion();
 
-            // Thread pour lire les messages du serveur
-            Thread serverListener = new Thread(() -> {
-                String serverMsg;
-                try {
-                    while ((serverMsg = br.readLine()) != null) {
-                        System.out.println("[Serveur] " + serverMsg);
-                        System.out.print("[Client] >> ");
-                    }
-                } catch (IOException e) {
-                    System.out.println("Connexion au serveur perdue.");
-                }
-            });
-            serverListener.start();
-
             BufferedReader consoleReader = new BufferedReader(new InputStreamReader(System.in));
             String userInput;
+            String serverMsg;
             System.out.println("Tapez un message (ou 'exit' pour quitter) :");
-            System.out.print("[Client]  >> ");
-            while ((userInput = consoleReader.readLine()) != null) {
-                if (userInput.equalsIgnoreCase("exit"))
-                    break;
-                pr.println(userInput); // envoi
+            
+            // Thread qui vide constamment le buffer quand ce n'est pas mon tour
+            Thread bufferCleaner = new Thread(() -> {
+                while (!Thread.currentThread().isInterrupted()) {
+                    if (!mon_tour.get()) {
+                        clearInputBuffer(consoleReader);
+                    }
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                        break;
+                    }
+                }
+            });
+            bufferCleaner.setDaemon(true);
+            bufferCleaner.start();
+            
+            while (true) {
+                if (mon_tour.get()) {
+                    System.out.print("[Client]  >> ");
+                    userInput = consoleReader.readLine();
+                    if (userInput == null || userInput.equalsIgnoreCase("exit"))
+                        break;
+                    pr.println(userInput); // envoi
+                    mon_tour.set(false);
+                } else {
+                    // Attendre la réponse du serveur
+                    serverMsg = br.readLine();
+                    if (serverMsg == null) {
+                        System.out.println("Connexion au serveur perdue.");
+                        break;
+                    }
+                    System.out.println("[Serveur] " + serverMsg);
+                    mon_tour.set(true);
+                }
             }
+            bufferCleaner.interrupt();
             s.close();
         } catch (IOException e) {
             e.printStackTrace();
