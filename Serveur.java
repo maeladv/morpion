@@ -23,18 +23,17 @@ public class Serveur {
             // Traitez la communication via br et pr ici
             String message;
             while ((message = br.readLine()) != null) {
-                System.out.println("Message reçu du client : " + message);
-                pr.println("Message reçu par le server : " + message);
+                System.out.println("[Client] " + message);
 
                 BufferedReader consoleReader = new BufferedReader(new InputStreamReader(System.in));
                 String userInput;
-                System.out.println("Tapez un message (ou 'exit' pour quitter) :");
+                System.out.print("[Serveur] >>");
                 while ((userInput = consoleReader.readLine()) != null) {
                     if (userInput.equalsIgnoreCase("exit"))
                         break;
                     pr.println(userInput); // envoi
                     String chaine = br.readLine(); // lecture
-                    System.out.println(chaine);
+                    System.out.println("[Client] " + chaine);
                 }
                 socket.close();
 
