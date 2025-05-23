@@ -36,6 +36,7 @@ public class Client {
             System.out.println("Tapez un message (ou 'exit' pour quitter) :");
             System.out.print("[Client] ");
             while ((userInput = consoleReader.readLine()) != null) {
+                System.out.print("[Client] ");
                 if (userInput.equalsIgnoreCase("exit"))
                     break;
                 pr.println(userInput); // envoi
