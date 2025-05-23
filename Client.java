@@ -24,6 +24,7 @@ public class Client {
                 try {
                     while ((serverMsg = br.readLine()) != null) {
                         System.out.println("[Serveur] " + serverMsg);
+                        System.out.print("[Client] >> ");
                     }
                 } catch (IOException e) {
                     System.out.println("Connexion au serveur perdue.");
@@ -34,9 +35,8 @@ public class Client {
             BufferedReader consoleReader = new BufferedReader(new InputStreamReader(System.in));
             String userInput;
             System.out.println("Tapez un message (ou 'exit' pour quitter) :");
-            System.out.print("[Client] ");
+            System.out.print("[Client]  >> ");
             while ((userInput = consoleReader.readLine()) != null) {
-                System.out.print("[Client] ");
                 if (userInput.equalsIgnoreCase("exit"))
                     break;
                 pr.println(userInput); // envoi
