@@ -19,19 +19,31 @@ public class Serveur {
             OutputStreamWriter osr = new OutputStreamWriter(outputStream);
             BufferedWriter bw = new BufferedWriter(osr);
             PrintWriter pr = new PrintWriter(bw, true);
-            
-            // Traitez la communication via br et pr ici
-            String message;
-            while ((message = br.readLine()) != null) {
-                System.out.println("Message reçu du client : " + message);
-                pr.println("Message reçu par le server : " + message);
+
+            BufferedReader consoleReader = new BufferedReader(new InputStreamReader(System.in));
+            String message, userInput;
+
+            while (true) {
+                message = br.readLine();
+                if (message == null) {
+                    // Le client s'est déconnecté
+                    break;
+                }
+                System.out.println("[Client] " + message);
+                System.out.print("[Serveur] >>");
+                userInput = consoleReader.readLine();
+                if (userInput == null || userInput.equalsIgnoreCase("exit")) {
+                    break;
+                }
+                pr.println(userInput); // envoi
             }
 
-            // Fermez les ressources si nÃ©cessaire
+            // Fermez les ressources
             pr.close();
             br.close();
             socket.close();
             ss.close();
+            System.out.println("Connexion fermée.");
         } catch (IOException e) {
             e.printStackTrace();
         }
