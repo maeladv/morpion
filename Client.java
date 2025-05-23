@@ -9,6 +9,7 @@ public class Client {
 
     private String address;
     private int port;
+    private AtomicBoolean mon_tour = new AtomicBoolean(true);
 
     public Client(String address, int port) {
         this.address = address;
