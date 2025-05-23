@@ -31,10 +31,10 @@ public class Main {
                 client.start();
             });
             clientThread.start();
-            Morpion morpion = new Morpion(1);
-        } else {
+            Morpion morpion = new Morpion(1);        } else {
             System.out.println("Choix invalide.");
-        }
-        scanner.close();
+        }        // IMPORTANT: Ne pas fermer le scanner ici car cela fermerait System.in
+        // et provoquerait des erreurs dans les threads client et serveur
+        // Le scanner sera fermé automatiquement à la fin du programme
     }
 }
