@@ -6,6 +6,19 @@ import java.net.Socket;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Client {
+
+    private String address;
+    private int port;
+
+    public Client(String address, int port) {
+        this.address = address;
+        this.port = port;
+    }
+    public Client() {
+        this("localhost", 1200);
+    }
+ 
+
     // Fonction pour vider le buffer d'entrée
     private static void clearInputBuffer(BufferedReader reader) {
         try {
@@ -17,10 +30,8 @@ public class Client {
         }
     }
     
-    public static void main(String[] args) {
-        int port = 1200;
-        AtomicBoolean mon_tour = new AtomicBoolean(true);
-        String address = "localhost";
+
+  public void start() {
         try {
             Socket s = new Socket(address, port);
 
@@ -32,7 +43,6 @@ public class Client {
             OutputStreamWriter osr = new OutputStreamWriter(os);
             BufferedWriter bw = new BufferedWriter(osr);
             PrintWriter pr = new PrintWriter(bw, true);
-            // Morpion a = new Morpion();
 
             BufferedReader consoleReader = new BufferedReader(new InputStreamReader(System.in));
             String userInput;

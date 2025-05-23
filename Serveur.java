@@ -8,6 +8,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Serveur {
     public static final int PORT = 1200;
 
+    public Serveur() {}
+
+  
     // Fonction pour vider le buffer d'entrée
     private static void clearInputBuffer(BufferedReader reader) {
         try {
@@ -19,7 +22,7 @@ public class Serveur {
         }
     }
 
-    public static void main(String[] args) {
+  public void start() {
         try {
             ServerSocket ss = new ServerSocket(PORT);
             System.out.println("Server started on port " + PORT);
