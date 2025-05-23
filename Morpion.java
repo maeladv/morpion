@@ -8,6 +8,7 @@ public class Morpion extends JFrame {
     boolean croix = false;
     char[][] morpion = new char[3][3];
     char gagnant = 'a'; // Ajouté pour stocker le gagnant
+    
 
     public Morpion() {
         addMouseListener(new Souris(this));

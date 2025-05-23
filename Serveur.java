@@ -4,7 +4,9 @@ import java.net.*;
 public class Serveur {
     public static final int PORT = 1200;
 
-    public static void main(String[] args) {
+    public Serveur() {}
+
+    public void start() {
         try {
             ServerSocket ss = new ServerSocket(PORT);
             System.out.println("Server started on port " + PORT);

@@ -2,9 +2,18 @@ import java.io.*;
 import java.net.Socket;
 
 public class Client {
-    public static void main(String[] args) {
-        int port = 1200;
-        String address = "172.20.10.2";
+    private String address;
+    private int port;
+
+    public Client(String address, int port) {
+        this.address = address;
+        this.port = port;
+    }
+    public Client() {
+        this("localhost", 1200);
+    }
+
+    public void start() {
         try {
             Socket s = new Socket(address, port);
 
@@ -16,7 +25,6 @@ public class Client {
             OutputStreamWriter osr = new OutputStreamWriter(os);
             BufferedWriter bw = new BufferedWriter(osr);
             PrintWriter pr = new PrintWriter(bw, true);
-            // Morpion a = new Morpion();
 
             // Thread pour lire les messages du serveur
             Thread serverListener = new Thread(() -> {
