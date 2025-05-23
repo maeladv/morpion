@@ -1,12 +1,28 @@
+//ADVISSE Mael
+// BEDNAROWICZ Lousion
+
 import java.io.*;
 import java.net.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Serveur {
     public static final int PORT = 1200;
 
     public Serveur() {}
 
-    public void start() {
+  
+    // Fonction pour vider le buffer d'entrée
+    private static void clearInputBuffer(BufferedReader reader) {
+        try {
+            while (reader.ready()) {
+                reader.read();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+  public void start() {
         try {
             ServerSocket ss = new ServerSocket(PORT);
             System.out.println("Server started on port " + PORT);
@@ -24,23 +40,46 @@ public class Serveur {
 
             BufferedReader consoleReader = new BufferedReader(new InputStreamReader(System.in));
             String message, userInput;
+            AtomicBoolean mon_tour = new AtomicBoolean(false);
+            
+            // Thread qui vide constamment le buffer quand ce n'est pas mon tour
+            Thread bufferCleaner = new Thread(() -> {
+                while (!Thread.currentThread().isInterrupted()) {
+                    if (!mon_tour.get()) {
+                        clearInputBuffer(consoleReader);
+                    }
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                        break;
+                    }
+                }
+            });
+            bufferCleaner.setDaemon(true);
+            bufferCleaner.start();
 
             while (true) {
-                message = br.readLine();
-                if (message == null) {
-                    // Le client s'est déconnecté
-                    break;
+                if (!mon_tour.get()) {
+                    message = br.readLine();
+                    if (message == null) {
+                        // Le client s'est déconnecté
+                        break;
+                    }
+                    System.out.println("[Client] " + message);
+                    mon_tour.set(true);
+                } else {
+                    System.out.print("[Serveur] >> ");
+                    userInput = consoleReader.readLine();
+                    if (userInput == null || userInput.equalsIgnoreCase("exit")) {
+                        break;
+                    }
+                    pr.println(userInput); // envoi
+                    mon_tour.set(false);
                 }
-                System.out.println("[Client] " + message);
-                System.out.print("[Serveur] >>");
-                userInput = consoleReader.readLine();
-                if (userInput == null || userInput.equalsIgnoreCase("exit")) {
-                    break;
-                }
-                pr.println(userInput); // envoi
             }
 
             // Fermez les ressources
+            bufferCleaner.interrupt();
             pr.close();
             br.close();
             socket.close();
