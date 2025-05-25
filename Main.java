@@ -1,6 +1,6 @@
 import java.util.Scanner;
-import java.net.*; // Ajout de l'import pour les sockets
-import java.io.*; // Ajout de l'import pour les flux d'entrée/sortie
+import java.net.*; 
+import java.io.*;
 
 public class Main {
     public static void main(String[] args) {
@@ -46,8 +46,5 @@ public class Main {
         } else {
             System.out.println("Choix invalide.");
         }
-        // IMPORTANT: Ne pas fermer le scanner ici car cela fermerait System.in
-        // et provoquerait des erreurs dans les threads client et serveur
-        // Le scanner sera fermé automatiquement à la fin du programme
     }
 }
