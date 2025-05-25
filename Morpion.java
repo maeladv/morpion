@@ -9,7 +9,7 @@ public class Morpion extends JFrame {
     int x = 250, y = 300;
     boolean croix = false;
     char[][] morpion = new char[3][3];
-    char gagnant = 'a'; // Ajouté pour stocker le gagnant
+    char gagnant = 'a'; // stocker le gagnant
     
     private int gameMode; // 0 pour serveur, 1 pour client
     private boolean monTour;
@@ -29,15 +29,14 @@ public class Morpion extends JFrame {
             d.height / 2 - this.getHeight() / 2
         );
         
-        // Ajout du symbole et de l'information "premier" ou "second" dans le titre
         String joueur = gameMode == 1 ? "Client (X, premier)" : "Serveur (O, second)";
         setTitle("Morpion - " + joueur);
         
         // Initialiser la couleur de fond selon si c'est notre tour ou pas
         if (monTour) {
-            getContentPane().setBackground(new Color(230, 255, 230)); // Vert très clair quand c'est notre tour
+            getContentPane().setBackground(new Color(230, 255, 230)); // Vert notre tour
         } else {
-            getContentPane().setBackground(new Color(255, 245, 230)); // Orange très clair quand c'est le tour de l'adversaire
+            getContentPane().setBackground(new Color(255, 245, 230)); // Orange tour de l'adversaire
         }
         
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -99,7 +98,7 @@ public class Morpion extends JFrame {
 
         super.paint(g);
         
-        // Conversion en Graphics2D pour pouvoir modifier l'épaisseur des traits
+        // modifier l'épaisseur des traits
         Graphics2D g2d = (Graphics2D) g;
         g2d.setStroke(new BasicStroke(3)); // Épaisseur de 3 pixels pour la grille
         
@@ -115,7 +114,6 @@ public class Morpion extends JFrame {
             }
         }
         
-        // Dessin grille décalée vers le bas
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
                 g2d.drawRect((i+1)*100, (j+1)*100 + decalageY, 100, 100);
@@ -132,7 +130,7 @@ public class Morpion extends JFrame {
             }
         }
         
-        // Affichage du gagnant
+        // Affichage gagnant
         if (gagnant == 'x' || gagnant == 'o') {
             g.setFont(new Font("Arial", Font.BOLD, 32));
             g.setColor(Color.RED);
@@ -145,9 +143,9 @@ public class Morpion extends JFrame {
     }
 
     public void affect(int clicX, int clicY) {
-        int decalageY = 40; // Même décalage que dans la méthode paint
+        int decalageY = 40; 
         
-        // Ajustement des coordonnées de clic pour prendre en compte le décalage
+        
         int i = clicX / 100 - 1;
         int j = (clicY - decalageY) / 100 - 1;
         
@@ -160,7 +158,7 @@ public class Morpion extends JFrame {
             monTour = false;
             
             // Changement de couleur de fond selon le tour
-            getContentPane().setBackground(new Color(255, 245, 230)); // Orange très clair quand c'est le tour de l'adversaire
+            getContentPane().setBackground(new Color(255, 245, 230)); // Orange tour de l'adversaire
             
             // Vérifie si quelqu'un a gagné ou match nul
             gagnant = gagne(morpion);
@@ -195,7 +193,7 @@ public class Morpion extends JFrame {
     public void updateFromGameState(GameState state) {
         if (state == null) return;
         
-        // Copie profonde de la grille
+        // Copie grille
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
                 morpion[i][j] = state.getGrid()[i][j];
@@ -207,9 +205,9 @@ public class Morpion extends JFrame {
         
         // Changement de couleur de fond selon le tour
         if (monTour) {
-            getContentPane().setBackground(new Color(230, 255, 230)); // Vert très clair quand c'est notre tour
+            getContentPane().setBackground(new Color(230, 255, 230)); // Vert notre tour
         } else {
-            getContentPane().setBackground(new Color(255, 245, 230)); // Orange très clair quand c'est le tour de l'adversaire
+            getContentPane().setBackground(new Color(255, 245, 230)); // Orange tour de l'adversaire
         }
         
         System.out.println("Jeu mis à jour: " + (monTour ? "C'est à mon tour" : "C'est au tour de l'adversaire"));

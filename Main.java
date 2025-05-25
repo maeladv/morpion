@@ -1,6 +1,4 @@
 import java.util.Scanner;
-import java.net.*; 
-import java.io.*;
 
 public class Main {
     public static void main(String[] args) {
@@ -10,13 +8,13 @@ public class Main {
         System.out.println("2. Client");
         System.out.print(">> ");
         int choix = scanner.nextInt();
-        scanner.nextLine(); // consomme le retour à la ligne
+        scanner.nextLine(); // retour à la ligne
 
         if (choix == 1) {
-            // Création du morpion côté serveur (joueur O)
+            // Création morpion côté serveur (joueur O)
             Morpion morpion = new Morpion(0);
             
-            // Création et démarrage du serveur
+            // Création et démarrage serveur
             Serveur serveur = new Serveur();
             serveur.setMorpion(morpion);
             
@@ -32,10 +30,10 @@ public class Main {
             int port = scanner.nextInt();
             scanner.nextLine();
             
-            // Création du morpion côté client (joueur X)
+            // Création morpion côté client (joueur X)
             Morpion morpion = new Morpion(1);
             
-            // Création et démarrage du client
+            // Création et démarrage client
             Client client = new Client(ip, port);
             client.setMorpion(morpion);
             

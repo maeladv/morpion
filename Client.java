@@ -42,7 +42,7 @@ public class Client {
             System.out.println("Connexion établie avec le serveur. Vous jouez avec X.");
             
                         
-            // Envoyer l'état initial du jeu au serveur (pour débloquer le serveur)
+            // Envoyer état initial du jeu au serveur
             if (morpion != null) {
                 GameState etatInitial = new GameState();
                 pr.println(etatInitial.toMessage());
@@ -58,9 +58,9 @@ public class Client {
                 });
             }
             
-            // Mode écoute permanente des messages du serveur
+            // écoute permanente des messages du serveur
             while (true) {
-                // Attendre la réponse du serveur
+                // Attendre réponse serveur
                 serverMsg = br.readLine();
                 if (serverMsg == null) {
                     System.out.println("Connexion au serveur perdue.");

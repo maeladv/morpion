@@ -44,7 +44,7 @@ public class GameState implements Serializable {
         this.winner = winner;
     }
     
-    // Convertit l'état du jeu en format string pour l'envoi via sockets
+    // Convertit l'état en string pour envoi
     public String toMessage() {
         StringBuilder sb = new StringBuilder("GAME:");
         // Ajout de la grille
@@ -58,7 +58,6 @@ public class GameState implements Serializable {
         return sb.toString();
     }
     
-    // Parse un message pour construire un GameState
     public static GameState fromMessage(String message) {
         if (!message.startsWith("GAME:")) {
             return null;
@@ -71,7 +70,7 @@ public class GameState implements Serializable {
         
         GameState state = new GameState();
         
-        // Récupérer la grille
+        // Récupére grille
         String gridStr = parts[1];
         if (gridStr.length() == 9) {
             for (int i = 0; i < 3; i++) {
@@ -81,14 +80,14 @@ public class GameState implements Serializable {
             }
         }
         
-        // Récupérer le tour
+        // Récupére tour
         if (parts[2].equals("C")) {
             state.clientTurn = true;
         } else if (parts[2].equals("S")) {
             state.clientTurn = false;
         }
         
-        // Récupérer le gagnant
+        // Récupére gagnant
         if (parts.length > 3 && parts[3].length() > 0) {
             state.winner = parts[3].charAt(0);
         }
@@ -96,7 +95,6 @@ public class GameState implements Serializable {
         return state;
     }
     
-    // Vérifie si un message est un message de jeu
     public static boolean isGameMessage(String message) {
         return message != null && message.startsWith("GAME:");
     }

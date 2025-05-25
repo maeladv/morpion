@@ -45,11 +45,11 @@ public class Serveur {
             
             System.out.println("Partie de Morpion démarrée. Vous jouez avec O. Le client joue en premier.");
 
-            // Mode écoute permanente des messages du client
+            // écoute permanente des messages du client
             while (true) {
                 message = br.readLine();
                 if (message == null) {
-                    // Le client s'est déconnecté
+                    // Le client déconnecté
                     break;
                 }
                 
@@ -63,7 +63,6 @@ public class Serveur {
                 }
             }
 
-            // Fermez les ressources
             pr.close();
             br.close();
             socket.close();
