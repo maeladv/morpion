@@ -41,6 +41,14 @@ public class Client {
             String serverMsg;
             System.out.println("Connexion établie avec le serveur. Vous jouez avec X.");
             
+                        
+            // Envoyer l'état initial du jeu au serveur (pour débloquer le serveur)
+            if (morpion != null) {
+                GameState etatInitial = new GameState();
+                pr.println(etatInitial.toMessage());
+                System.out.println("Client envoie l'état initial: " + etatInitial.toMessage());
+            }
+
             // Configurer le callback pour envoyer les coups
             if (morpion != null) {
                 morpion.setSendMoveCallback(message -> {
@@ -59,6 +67,7 @@ public class Client {
                     break;
                 }
                 
+                System.out.println("Client a reçu: " + serverMsg);
                 // Vérifier si c'est un message de jeu
                 if (GameState.isGameMessage(serverMsg)) {
                     GameState gameState = GameState.fromMessage(serverMsg);
