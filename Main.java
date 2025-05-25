@@ -13,27 +13,40 @@ public class Main {
         scanner.nextLine(); // consomme le retour à la ligne
 
         if (choix == 1) {
+            // Création du morpion côté serveur (joueur O)
+            Morpion morpion = new Morpion(0);
+            
+            // Création et démarrage du serveur
+            Serveur serveur = new Serveur();
+            serveur.setMorpion(morpion);
+            
             // on le lance dans autre thread (comme dans un autre terminal)
             Thread serveurThread = new Thread(() -> {
-                Serveur serveur = new Serveur();
                 serveur.start();
             });
             serveurThread.start();
-            Morpion morpion = new Morpion(0);
         } else if (choix == 2) {
             System.out.print("Entrez l'adresse IP du serveur : ");
             String ip = scanner.nextLine();
             System.out.print("Entrez le port du serveur : ");
             int port = scanner.nextInt();
             scanner.nextLine();
+            
+            // Création du morpion côté client (joueur X)
+            Morpion morpion = new Morpion(1);
+            
+            // Création et démarrage du client
+            Client client = new Client(ip, port);
+            client.setMorpion(morpion);
+            
             Thread clientThread = new Thread(() -> {
-                Client client = new Client(ip, port);
                 client.start();
             });
             clientThread.start();
-            Morpion morpion = new Morpion(1);        } else {
+        } else {
             System.out.println("Choix invalide.");
-        }        // IMPORTANT: Ne pas fermer le scanner ici car cela fermerait System.in
+        }
+        // IMPORTANT: Ne pas fermer le scanner ici car cela fermerait System.in
         // et provoquerait des erreurs dans les threads client et serveur
         // Le scanner sera fermé automatiquement à la fin du programme
     }

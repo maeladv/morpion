@@ -10,6 +10,7 @@ public class Client {
     private String address;
     private int port;
     private AtomicBoolean mon_tour = new AtomicBoolean(true);
+    private Morpion morpion;
 
     public Client(String address, int port) {
         this.address = address;
@@ -18,17 +19,9 @@ public class Client {
     public Client() {
         this("localhost", 1200);
     }
- 
-
-    // Fonction pour vider le buffer d'entrée
-    private static void clearInputBuffer(BufferedReader reader) {
-        try {
-            while (reader.ready()) {
-                reader.read();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    
+    public void setMorpion(Morpion morpion) {
+        this.morpion = morpion;
     }
     
 
@@ -45,47 +38,36 @@ public class Client {
             BufferedWriter bw = new BufferedWriter(osr);
             PrintWriter pr = new PrintWriter(bw, true);
 
-            BufferedReader consoleReader = new BufferedReader(new InputStreamReader(System.in));
-            String userInput;
             String serverMsg;
-            System.out.println("Tapez un message (ou 'exit' pour quitter) :");
+            System.out.println("Connexion établie avec le serveur. Vous jouez avec X.");
             
-            // Thread qui vide constamment le buffer quand ce n'est pas mon tour
-            Thread bufferCleaner = new Thread(() -> {
-                while (!Thread.currentThread().isInterrupted()) {
-                    if (!mon_tour.get()) {
-                        clearInputBuffer(consoleReader);
-                    }
-                    try {
-                        Thread.sleep(50);
-                    } catch (InterruptedException e) {
-                        break;
-                    }
-                }
-            });
-            bufferCleaner.setDaemon(true);
-            bufferCleaner.start();
+            // Configurer le callback pour envoyer les coups
+            if (morpion != null) {
+                morpion.setSendMoveCallback(message -> {
+                    System.out.println("Client envoie: " + message);
+                    pr.println(message);
+                    mon_tour.set(false);  // Après avoir joué, ce n'est plus notre tour
+                });
+            }
             
+            // Mode écoute permanente des messages du serveur
             while (true) {
-                if (mon_tour.get()) {
-                    System.out.print("[Client]  >> ");
-                    userInput = consoleReader.readLine();
-                    if (userInput == null || userInput.equalsIgnoreCase("exit"))
-                        break;
-                    pr.println(userInput); // envoi
-                    mon_tour.set(false);
-                } else {
-                    // Attendre la réponse du serveur
-                    serverMsg = br.readLine();
-                    if (serverMsg == null) {
-                        System.out.println("Connexion au serveur perdue.");
-                        break;
+                // Attendre la réponse du serveur
+                serverMsg = br.readLine();
+                if (serverMsg == null) {
+                    System.out.println("Connexion au serveur perdue.");
+                    break;
+                }
+                
+                // Vérifier si c'est un message de jeu
+                if (GameState.isGameMessage(serverMsg)) {
+                    GameState gameState = GameState.fromMessage(serverMsg);
+                    if (gameState != null && morpion != null) {
+                        morpion.updateFromGameState(gameState);
+                        mon_tour.set(true);  // Après avoir reçu un coup, c'est notre tour
                     }
-                    System.out.println("[Serveur] " + serverMsg);
-                    mon_tour.set(true);
                 }
             }
-            bufferCleaner.interrupt();
             s.close();
         } catch (IOException e) {
             e.printStackTrace();

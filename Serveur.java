@@ -7,19 +7,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Serveur {
     public static final int PORT = 1200;
+    private Morpion morpion;
 
     public Serveur() {}
-
-  
-    // Fonction pour vider le buffer d'entrée
-    private static void clearInputBuffer(BufferedReader reader) {
-        try {
-            while (reader.ready()) {
-                reader.read();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    
+    public void setMorpion(Morpion morpion) {
+        this.morpion = morpion;
     }
 
   public void start() {
@@ -38,48 +31,39 @@ public class Serveur {
             BufferedWriter bw = new BufferedWriter(osr);
             PrintWriter pr = new PrintWriter(bw, true);
 
-            BufferedReader consoleReader = new BufferedReader(new InputStreamReader(System.in));
-            String message, userInput;
+            String message;
             AtomicBoolean mon_tour = new AtomicBoolean(false);
             
-            // Thread qui vide constamment le buffer quand ce n'est pas mon tour
-            Thread bufferCleaner = new Thread(() -> {
-                while (!Thread.currentThread().isInterrupted()) {
-                    if (!mon_tour.get()) {
-                        clearInputBuffer(consoleReader);
-                    }
-                    try {
-                        Thread.sleep(50);
-                    } catch (InterruptedException e) {
-                        break;
-                    }
-                }
-            });
-            bufferCleaner.setDaemon(true);
-            bufferCleaner.start();
+            // Configurer le callback pour envoyer les coups
+            if (morpion != null) {
+                morpion.setSendMoveCallback(gameMessage -> {
+                    System.out.println("Serveur envoie: " + gameMessage);
+                    pr.println(gameMessage);
+                    mon_tour.set(false);  // Après avoir joué, ce n'est plus notre tour
+                });
+            }
+            
+            System.out.println("Partie de Morpion démarrée. Vous jouez avec O. Le client joue en premier.");
 
+            // Mode écoute permanente des messages du client
             while (true) {
-                if (!mon_tour.get()) {
-                    message = br.readLine();
-                    if (message == null) {
-                        // Le client s'est déconnecté
-                        break;
+                message = br.readLine();
+                if (message == null) {
+                    // Le client s'est déconnecté
+                    break;
+                }
+                
+                // Vérifier si c'est un message de jeu
+                if (GameState.isGameMessage(message)) {
+                    GameState gameState = GameState.fromMessage(message);
+                    if (gameState != null && morpion != null) {
+                        morpion.updateFromGameState(gameState);
+                        mon_tour.set(true);  // Après avoir reçu un coup, c'est notre tour
                     }
-                    System.out.println("[Client] " + message);
-                    mon_tour.set(true);
-                } else {
-                    System.out.print("[Serveur] >> ");
-                    userInput = consoleReader.readLine();
-                    if (userInput == null || userInput.equalsIgnoreCase("exit")) {
-                        break;
-                    }
-                    pr.println(userInput); // envoi
-                    mon_tour.set(false);
                 }
             }
 
             // Fermez les ressources
-            bufferCleaner.interrupt();
             pr.close();
             br.close();
             socket.close();

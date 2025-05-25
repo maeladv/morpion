@@ -2,6 +2,8 @@ import java.awt.*;
 import javax.swing.JFrame;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.function.Consumer;
+import java.awt.BasicStroke;
 
 public class Morpion extends JFrame {
     int x = 250, y = 300;
@@ -9,10 +11,16 @@ public class Morpion extends JFrame {
     char[][] morpion = new char[3][3];
     char gagnant = 'a'; // Ajouté pour stocker le gagnant
     
-    
+    private int gameMode; // 0 pour serveur, 1 pour client
+    private boolean monTour;
+    private Consumer<String> sendMoveCallback;
 
     // gameMode = 0 pour serveur, 1 pour client
     public Morpion(int gameMode) {
+        this.gameMode = gameMode;
+        // Pour le client (1), c'est son tour en premier, pour le serveur (0), ce n'est pas son tour
+        this.monTour = gameMode == 1;
+        
         addMouseListener(new Souris(this));
         setSize(500, 600);
         Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
@@ -20,7 +28,21 @@ public class Morpion extends JFrame {
             d.width / 2 - this.getWidth() / 2,
             d.height / 2 - this.getHeight() / 2
         );
+        
+        // Ajout du symbole et de l'information "premier" ou "second" dans le titre
+        String joueur = gameMode == 1 ? "Client (X, premier)" : "Serveur (O, second)";
+        setTitle("Morpion - " + joueur);
+        
+        // Initialiser la couleur de fond selon si c'est notre tour ou pas
+        if (monTour) {
+            getContentPane().setBackground(new Color(230, 255, 230)); // Vert très clair quand c'est notre tour
+        } else {
+            getContentPane().setBackground(new Color(255, 245, 230)); // Orange très clair quand c'est le tour de l'adversaire
+        }
+        
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
+        
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
                 morpion[i][j] = 'a';
@@ -29,8 +51,10 @@ public class Morpion extends JFrame {
     }
 
     public void drawCrois(Graphics g, int x_hg, int y_hg, int x_hd, int y_hd, int x_bg, int y_bg, int x_bd, int y_bd, int marge){
-        g.drawLine(x_hg+marge, y_hg+marge, x_bd-marge, y_bd-marge);
-        g.drawLine(x_hd-marge, y_hd+marge, x_bg+marge, y_bg-marge);
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setStroke(new BasicStroke(5)); // Épaisseur de 5 pixels
+        g2d.drawLine(x_hg+marge, y_hg+marge, x_bd-marge, y_bd-marge);
+        g2d.drawLine(x_hd-marge, y_hd+marge, x_bg+marge, y_bg-marge);
     }
 
     public char gagne(char[][] m) {
@@ -71,19 +95,43 @@ public class Morpion extends JFrame {
 
     public void paint(Graphics g) {
         int marge = 10;
+        int decalageY = 40; // Décalage vertical de 40 pixels
 
         super.paint(g);
-        // Dessin grille
+        
+        // Conversion en Graphics2D pour pouvoir modifier l'épaisseur des traits
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setStroke(new BasicStroke(3)); // Épaisseur de 3 pixels pour la grille
+        
+        // Affichage du texte indiquant le tour du joueur
+        g.setFont(new Font("Arial", Font.BOLD, 20));
+        if (gagnant == 'a') {
+            if (monTour) {
+                g.setColor(Color.GREEN);
+                g.drawString("C'est votre tour !", 170, 100);
+            } else {
+                g.setColor(Color.ORANGE);
+                g.drawString("En attente de l'adversaire...", 120, 100);
+            }
+        }
+        
+        // Dessin grille décalée vers le bas
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
-                g.drawRect((i+1)*100, (j+1)*100, 100, 100);
+                g2d.drawRect((i+1)*100, (j+1)*100 + decalageY, 100, 100);
                 if(morpion[i][j] == 'x') {
-                    drawCrois(g, (i+1)*100, (j+1)*100, (i+2)*100, (j+1)*100, (i+1)*100, (j+2)*100, (i+2)*100, (j+2)*100, marge);
+                    drawCrois(g, (i+1)*100, (j+1)*100 + decalageY, 
+                            (i+2)*100, (j+1)*100 + decalageY, 
+                            (i+1)*100, (j+2)*100 + decalageY, 
+                            (i+2)*100, (j+2)*100 + decalageY, marge);
                 } else if (morpion[i][j] == 'o') {
-                    g.drawOval((i+1)*100 + marge, (j+1)*100 + marge, 100 - 2*marge, 100 - 2*marge);
+                    g2d.setStroke(new BasicStroke(5)); // Épaisseur de 5 pixels pour les cercles
+                    g2d.drawOval((i+1)*100 + marge, (j+1)*100 + marge + decalageY, 
+                               100 - 2*marge, 100 - 2*marge);
                 }
             }
         }
+        
         // Affichage du gagnant
         if (gagnant == 'x' || gagnant == 'o') {
             g.setFont(new Font("Arial", Font.BOLD, 32));
@@ -97,22 +145,89 @@ public class Morpion extends JFrame {
     }
 
     public void affect(int clicX, int clicY) {
+        int decalageY = 40; // Même décalage que dans la méthode paint
+        
+        // Ajustement des coordonnées de clic pour prendre en compte le décalage
         int i = clicX / 100 - 1;
-        int j = clicY / 100 - 1;
-        if (gagnant == 'a' && i >= 0 && i < 3 && j >= 0 && j < 3 && morpion[i][j] == 'a') {
-            morpion[i][j] = croix ? 'o' : 'x';
-            croix = !croix;
+        int j = (clicY - decalageY) / 100 - 1;
+        
+        // Vérifie si c'est notre tour et si le jeu n'est pas terminé
+        if (monTour && gagnant == 'a' && i >= 0 && i < 3 && j >= 0 && j < 3 && morpion[i][j] == 'a') {
+            // Client joue X, Serveur joue O
+            morpion[i][j] = gameMode == 1 ? 'x' : 'o';
+            
+            // Change le tour
+            monTour = false;
+            
+            // Changement de couleur de fond selon le tour
+            getContentPane().setBackground(new Color(255, 245, 230)); // Orange très clair quand c'est le tour de l'adversaire
+            
+            // Vérifie si quelqu'un a gagné ou match nul
             gagnant = gagne(morpion);
             if (gagnant == 'a' && estMatchNul(morpion)) {
                 gagnant = 'n'; // n pour nul
             }
+            
+            // Envoie le coup au serveur/client
+            if (sendMoveCallback != null) {
+                GameState gameState = new GameState();
+                
+                // Copie profonde de la grille
+                char[][] gridCopy = new char[3][3];
+                for (int k = 0; k < 3; k++) {
+                    for (int l = 0; l < 3; l++) {
+                        gridCopy[k][l] = morpion[k][l];
+                    }
+                }
+                
+                gameState.setGrid(gridCopy);
+                gameState.setClientTurn(gameMode == 0); // Si c'est le serveur qui joue, le prochain tour est au client
+                gameState.setWinner(gagnant);
+                
+                System.out.println("Envoi du coup: " + i + "," + j);
+                sendMoveCallback.accept(gameState.toMessage());
+            }
+            
+            repaint();
         }
+    }
+    
+    public void updateFromGameState(GameState state) {
+        if (state == null) return;
+        
+        // Copie profonde de la grille
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                morpion[i][j] = state.getGrid()[i][j];
+            }
+        }
+        
+        monTour = (gameMode == 1 && state.isClientTurn()) || (gameMode == 0 && !state.isClientTurn());
+        gagnant = state.getWinner();
+        
+        // Changement de couleur de fond selon le tour
+        if (monTour) {
+            getContentPane().setBackground(new Color(230, 255, 230)); // Vert très clair quand c'est notre tour
+        } else {
+            getContentPane().setBackground(new Color(255, 245, 230)); // Orange très clair quand c'est le tour de l'adversaire
+        }
+        
+        System.out.println("Jeu mis à jour: " + (monTour ? "C'est à mon tour" : "C'est au tour de l'adversaire"));
+        System.out.println("État de la grille:");
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                System.out.print(morpion[i][j] + " ");
+            }
+            System.out.println();
+        }
+        
         repaint();
     }
-
-    // public static void main(String[] args) {
-    //     Morpion a = new Morpion();
-    // }
+    
+    // Méthode pour définir le callback pour envoyer les coups
+    public void setSendMoveCallback(Consumer<String> callback) {
+        this.sendMoveCallback = callback;
+    }
 }
 
 class Souris extends MouseAdapter {
